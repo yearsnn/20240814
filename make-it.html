@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>What Is - Glitch Art</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+html{background: seagreen;}
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #111;
+    color: #fff;
+    position: relative;
+}
+
+#container {
+    position: relative;
+    width: 800px;
+    height: 600px;
+    overflow: hidden;
+}
+
+#grid-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+}
+
+#background-image {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 0;
+    object-fit: cover;
+    pointer-events: none;
+}
+
+.grid {
+    position: absolute;
+    width: calc(100% / 30); 
+    height: 100%;
+    cursor: grab;
+    transition: transform 0.3s, opacity 0.3s;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.grid img {
+    position: absolute;
+    width: 3000%; 
+    height: 100%;
+    object-fit: cover;
+    top: 0;
+    left: 0;
+    pointer-events: none; 
+}
+
+.grid.dragging {
+    opacity: 0.8;
+}
+
+.grid.reversed {
+    filter: hue-rotate(180deg) invert(1);
+}
+
+#reset-button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #fff;
+    color: #111;
+    border: none;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    position: absolute;
+    top: 20px;
+    right: 20px; 
+    z-index: 2;
+}
+</style>
+</head>
+<body>
+    <nav class="navbar">
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="what-is.html">What is</a></li>
+            <li><a href="media.html">Media</a></li>
+            <li><a href="painting.html">Painting</a></li>
+            <li><a href="make-it.html">Make it</a></li>
+        </ul>
+    </nav>
+    <div id="container">
+        <div id="grid-container">
+            <img id="background-image" src="22.jpg" alt="Background Image">
+        </div>
+        <button id="reset-button">Reset</button>
+    </div>
+    <script>
+        const container = document.getElementById('grid-container');
+        const resetButton = document.getElementById('reset-button');
+        let isDragging = false;
+        let startX;
+        let currentGrid;
+        let grids = [];
+        const totalGrids = 30;
+        const imgSrc = '22.jpg'; 
+
+
+        for (let i = 0; i < totalGrids; i++) {
+            const grid = document.createElement('div');
+            grid.classList.add('grid');
+            grid.style.width = `${100 / totalGrids}%`;
+            grid.style.left = `${(100 / totalGrids) * i}%`; 
+
+            const img = document.createElement('img');
+            img.src = imgSrc;
+            img.style.left = `${-i * (800 / totalGrids)}px`; 
+            grid.appendChild(img);
+            container.appendChild(grid);
+            grids.push(grid);
+
+            // 드래그 이벤트 핸들러
+            grid.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                startX = e.pageX - (parseInt(grid.dataset.offsetX) || 0);
+                currentGrid = grid;
+                currentGrid.style.cursor = 'grabbing';
+                currentGrid.classList.add('dragging');
+            });
+
+            grid.addEventListener('mouseup', () => {
+                isDragging = false;
+                currentGrid.style.cursor = 'grab';
+                currentGrid.classList.remove('dragging');
+                if (currentGrid.style.transform !== 'translateX(0px)') {
+                    currentGrid.classList.add('reversed'); 
+                }
+                currentGrid.dataset.offsetX = parseInt(currentGrid.style.transform.replace('translateX(', '').replace('px)', '')) || 0;
+            });
+
+            grid.addEventListener('mousemove', (e) => {
+                if (isDragging && currentGrid === grid) {
+                    const dx = e.pageX - startX;
+                    const newTransformX = Math.max(-100, Math.min(100, dx));
+                    currentGrid.style.transform = `translateX(${newTransformX}px)`;
+                }
+            });
+
+            grid.addEventListener('mouseleave', () => {
+                if (isDragging && currentGrid === grid) {
+                    isDragging = false;
+                    currentGrid.style.cursor = 'grab';
+                    currentGrid.classList.remove('dragging');
+                }
+            });
+        }
+
+        resetButton.addEventListener('click', () => {
+            grids.forEach(grid => {
+                grid.style.transform = 'translateX(0px)';
+                grid.dataset.offsetX = 0;
+                grid.classList.remove('reversed');
+            });
+        });
+    </script>
+</body>
+</html>
